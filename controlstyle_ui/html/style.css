@@ -1,0 +1,38 @@
+
+#image_upload{min-height: 512px}
+#image_upload [data-testid="image"], #image_upload [data-testid="image"] > div{min-height: 512px}
+#image_upload .touch-none{display: flex}
+
+
+#generate-button {
+    color:white;
+    border-color: orangered;
+    background: orange;
+    height: 45px;
+}
+
+.footer {
+    margin-bottom: 45px;
+    margin-top: 35px;
+    text-align: center;
+    border-bottom: 1px solid #e5e5e5;
+}
+.footer>p {
+    font-size: .8rem;
+    display: inline-block;
+    padding: 0 10px;
+    transform: translateY(10px);
+    background: white;
+}
+.dark .footer {
+    border-color: #303030;
+}
+.dark .footer>p {
+    background: #0b0f19;
+}
+.acknowledgments h4{
+    margin: 1.25em 0 .25em 0;
+    font-weight: bold;
+    font-size: 115%;
+}
+
