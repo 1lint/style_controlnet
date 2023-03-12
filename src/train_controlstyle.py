@@ -365,69 +365,86 @@ def main(args):
             Path(accelerator.trackers[0].logging_dir) / f"{global_step}.png"
         )
 
-    for epoch in range(first_epoch, args.num_train_epochs):
-        # run training loop
-        controlnet.train()
-        for step, batch in enumerate(train_dataloader):
-            loss, encoder_hidden_states = compute_loss(batch)
+    try:
+        for epoch in range(first_epoch, args.num_train_epochs):
+            # run training loop
+            controlnet.train()
+            for step, batch in enumerate(train_dataloader):
+                loss, encoder_hidden_states = compute_loss(batch)
 
-            loss /= args.gradient_accumulation_steps
-            accelerator.backward(loss)
-            if global_step % args.gradient_accumulation_steps == 1:
+                loss /= args.gradient_accumulation_steps
+                accelerator.backward(loss)
+                if global_step % args.gradient_accumulation_steps == 1:
+                    if accelerator.sync_gradients:
+                        accelerator.clip_grad_norm_(params_to_optimize, args.max_grad_norm)
+                    optimizer.step()
+                    optimizer.zero_grad()
+
+                # Checks if the accelerator has performed an optimization step behind the scenes
                 if accelerator.sync_gradients:
-                    accelerator.clip_grad_norm_(params_to_optimize, args.max_grad_norm)
-                optimizer.step()
-                optimizer.zero_grad()
+                    progress_bar.update(1)
+                    global_step += 1
 
-            # Checks if the accelerator has performed an optimization step behind the scenes
-            if accelerator.sync_gradients:
-                progress_bar.update(1)
-                global_step += 1
-
-                if accelerator.is_main_process:
-                    if global_step % args.checkpointing_steps == 0:
-                        save_path = os.path.join(
-                            args.output_dir, f"checkpoint-{global_step}"
-                        )
-                        if args.save_whole_pipeline:
-                            control_pipe.controlnet = accelerator.unwrap_model(
-                                controlnet
+                    if accelerator.is_main_process:
+                        if global_step % args.checkpointing_steps == 0:
+                            save_path = os.path.join(
+                                args.output_dir, f"checkpoint-{global_step}"
                             )
-                            control_pipe.save_pretrained(
-                                save_path, safe_serialization=True
-                            )
-                        else:
-                            accelerator.unwrap_model(controlnet).save_pretrained(
-                                save_path, safe_serialization=True
-                            )
+                            if args.save_whole_pipeline:
+                                control_pipe.controlnet = accelerator.unwrap_model(
+                                    controlnet
+                                )
+                                control_pipe.save_pretrained(
+                                    save_path, safe_serialization=True
+                                )
+                            else:
+                                accelerator.unwrap_model(controlnet).save_pretrained(
+                                    save_path, safe_serialization=True
+                                )
 
-                    if (
-                        args.image_logging_steps
-                        and global_step % args.image_logging_steps == 1
-                    ):
-                        log_images(batch, encoder_hidden_states)
+                        if (
+                            args.image_logging_steps
+                            and global_step % args.image_logging_steps == 1
+                        ):
+                            log_images(batch, encoder_hidden_states)
 
-            logs = {"training_loss": loss.detach().item()}
-            accelerator.log(logs, step=step)
-            progress_bar.set_postfix(**logs)
-
-            if global_step >= args.max_train_steps:
-                break
-
-        accelerator.wait_for_everyone()
-
-        # run validation loop
-        if args.valid_data_dir:
-            controlnet.eval()
-            for step, batch in enumerate(valid_dataloader):
-                with torch.no_grad():
-                    loss, encoder_hidden_states = compute_loss(batch)
-
-                logs = {"validation_loss": loss.detach().item()}
-                accelerator.log(logs, step=step)
+                logs = {"training_loss": loss.detach().item()}
+                accelerator.log(logs, step=global_step)
                 progress_bar.set_postfix(**logs)
+
+                if global_step >= args.max_train_steps:
+                    break
 
             accelerator.wait_for_everyone()
 
-    accelerator.end_training()
+            # run validation loop
+            if args.valid_data_dir:
+                controlnet.eval()
+                for step, batch in enumerate(valid_dataloader):
+                    with torch.no_grad():
+                        loss, encoder_hidden_states = compute_loss(batch)
 
+                    logs = {"validation_loss": loss.detach().item()}
+                    accelerator.log(logs, step=global_step)
+                    progress_bar.set_postfix(**logs)
+
+                accelerator.wait_for_everyone()
+
+    except KeyboardInterrupt:
+        save_path = os.path.join(
+            args.output_dir, f"checkpoint-{global_step}"
+        )
+
+        if args.save_whole_pipeline:
+            control_pipe.controlnet = accelerator.unwrap_model(
+                controlnet
+            )
+            control_pipe.save_pretrained(
+                save_path, safe_serialization=True
+            )
+        else:
+            accelerator.unwrap_model(controlnet).save_pretrained(
+                save_path, safe_serialization=True
+            )
+
+    accelerator.end_training()
