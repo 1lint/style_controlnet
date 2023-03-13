@@ -52,7 +52,7 @@ def load_pipe(model_id, controlnet_id, scheduler_name, tab_index=1, pipe_kwargs=
     if model_id != loaded_model_id:
         pipe = pipe_class.from_pretrained(
             model_id,
-            controlnet=ControlNetModel.from_pretrained(controlnet_id, subfolder='controlnet'),
+            controlnet=ControlNetModel.from_pretrained('lint/anime_styler', subfolder=controlnet_id),
             safety_checker=None,
             feature_extractor=None,
             requires_safety_checker=False,

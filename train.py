@@ -6,23 +6,26 @@ from pathlib import Path
 from src.train_controlstyle import main
 from src.parse_args import parse_args
 
-models_path = "/home/user/stable-diffusion-webui/models/Stable-diffusion/"
-base_ckpt = "dreamshaper_331BakedVae.safetensors"
+models_path = "/mnt/d/repos/stable-diffusion-webui/models/Stable-diffusion/"
+#base_ckpt = "dreamshaper_331BakedVae.safetensors"
+base_ckpt = "realdosmix_.safetensors"
 
-controlnet_ckpt = "anything-v4.5-pruned-fp16.ckpt"
+controlnet_ckpt = "anything-v4.0.ckpt"
 
 args = Namespace(
     
     pretrained_model_name_or_path=str(Path(models_path)/base_ckpt),
     #pretrained_model_name_or_path='lint/simpathizer',
 
-    #controlnet_weights_path=str(Path(models_path)/controlnet_ckpt)',
-    controlnet_weights_path='models/controlstyle/checkpoint-44000',
+    #controlnet_weights_path=str(Path(models_path)/controlnet_ckpt),
+    #controlnet_subfolder='unet',
+
+    controlnet_weights_path='models/realdosmix__animestyler2/checkpoint-6169',
     controlnet_subfolder=None,
 
     # dataset args
-    train_data_dir="/mnt/g/data/anybooru/train",
-    valid_data_dir="/mnt/g/data/anybooru/valid",
+    train_data_dir="/mnt/d/data/anybooru/train",
+    valid_data_dir="/mnt/d/data/anybooru/valid",
     resolution=512,
     from_hf_hub=False,
 
@@ -45,7 +48,7 @@ args = Namespace(
     dataloader_num_workers=cpu_count(),
 
     # logging args
-    output_dir=f"./models/{base_ckpt.rsplit('.',1)[0]}_animestyler",
+    output_dir=f"./models/{base_ckpt.rsplit('.',1)[0]}_animestyler2",
     report_to='tensorboard',
     image_logging_steps=0, # disabled when 0. costs additional VRAM to log images
     save_whole_pipeline=False,

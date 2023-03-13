@@ -43,7 +43,7 @@ def main(args):
     )
 
     accelerator = Accelerator(
-        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        #gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
         log_with=args.report_to,
         project_config=accelerator_project_config,
@@ -374,7 +374,7 @@ def main(args):
 
                 loss /= args.gradient_accumulation_steps
                 accelerator.backward(loss)
-                if global_step % args.gradient_accumulation_steps == 1:
+                if global_step % args.gradient_accumulation_steps == 0:
                     if accelerator.sync_gradients:
                         accelerator.clip_grad_norm_(params_to_optimize, args.max_grad_norm)
                     optimizer.step()

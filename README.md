@@ -8,10 +8,12 @@ Proof of concept for controlling Stable Diffusion image style using a ControlNet
 <p align="center"><img src="./examples/blue_eyes.gif"></p>
 
 ![](./examples/blue_eyes.png)
+
 `prompt`: "beautiful woman with blue eyes", `controlnet_prompt`: "1girl, blue eyes"
 
-![](./examples/red_eyes.png)
-`prompt` and `controlnet_prompt`: "1girl, red eyes, masterpiece, best quality, ultra-detailed, illustration, mksks style, best quality, CG, HDR, high quality, high-definition, extremely detailed, earring, gown, looking at viewer, detailed eyes"
+![](./examples/mountains.png)
+
+`prompt` and `controlnet_prompt`: "best quality, masterpiece, Dark hair, dark eyes, upper body, sun flare, outdoors, mountain, valley, sky. clouds, smiling"
 
 `controlnet_conditioning_scale` increments by 0.1 from 0 to 1, left to right. 
 

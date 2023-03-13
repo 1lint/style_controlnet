@@ -1,6 +1,5 @@
 xxlmaes/VinteProtogenMix
 runwayml/stable-diffusion-v1-5
 johnslegers/epic-diffusion
-andite/anything-v4.0
-hakurei/waifu-diffusion
 prompthero/openjourney-v2
+fsc0/RealDosMix
