@@ -60,6 +60,8 @@ def load_pipe(model_id, controlnet_id, scheduler_name, tab_index=1, pipe_kwargs=
             **json.loads(pipe_kwargs),
         )
         loaded_model_id = model_id
+    elif controlnet_id != loaded_controlnet_id:
+        pipe.controlnet = ControlNetModel.from_pretrained('lint/anime_styler', subfolder=controlnet_id)
 
     # if same model_id, instantiate new pipeline with same underlying pytorch objects to avoid reloading weights from disk
     elif pipe_class != pipe.__class__ or not isinstance(pipe.scheduler, scheduler):
@@ -70,7 +72,7 @@ def load_pipe(model_id, controlnet_id, scheduler_name, tab_index=1, pipe_kwargs=
 
     if device == "cuda":
         for component in pipe.components.values():
-            if hasattr(component, 'device'):
+            if isinstance(component, torch.nn.Module):
                 component.to('cuda', torch.float16)
 
         if _xformers_available:
@@ -84,6 +86,7 @@ def load_pipe(model_id, controlnet_id, scheduler_name, tab_index=1, pipe_kwargs=
 
 pipe = None
 loaded_model_id = ""
+loaded_controlnet_id = ""
 pipe = load_pipe(model_ids[0], controlnet_ids[0], default_scheduler)
 
 
